@@ -10,32 +10,25 @@
 </head>
 
 <body>
-    <main class="page narrow">
-        <header class="topbar">
-            <a class="brand" href="/">심야책방</a>
-        </header>
+    <header>
+        <a href="/">
+            <h1>심야책방</h1>
+            <p>영업시간 21:00 ~ 06:00</p>
+        </a>
+        <a class="button" href="/write">글쓰기</a>
+    </header>
 
-        <section class="panel">
-            <h1>새 글</h1>
-            <p id="writing-status" class="muted">운영 시간을 확인하고 있습니다.</p>
-            <p id="message" class="message" hidden></p>
+    <main>
+        <h1>새 글</h1>
 
-            <form id="write-form" class="stack-form">
-                <label>
-                    제목
-                    <input id="title" type="text" maxlength="100" required>
-                </label>
-                <label>
-                    본문
-                    <textarea id="content" maxlength="5000" required></textarea>
-                </label>
-                <label>
-                    비밀번호
-                    <input id="password" type="password" minlength="4" maxlength="100" required>
-                </label>
-                <button type="submit">게시글 작성</button>
-            </form>
-        </section>
+        <form class="stack-form">
+            <input id="title" class="strong" type="text" maxlength="100" placeholder="제목" required>
+            <textarea id="content" maxlength="5000" placeholder="본문" required></textarea>
+            <p>
+                <input id="password" type="password" minlength="4" maxlength="100" placeholder="비밀번호" required>
+                <button type="submit" class="button">작성</button>
+            </p>
+        </form>
     </main>
 </body>
 

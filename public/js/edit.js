@@ -1,43 +1,66 @@
 const postId = window.location.pathname.split('/').filter(Boolean).at(-1);
-const form = document.querySelector('#edit-form');
+const form = document.querySelector('form');
 const titleInput = document.querySelector('#title');
 const contentInput = document.querySelector('#content');
 const passwordInput = document.querySelector('#password');
-const message = document.querySelector('#message');
-const writingStatus = document.querySelector('#writing-status');
+const submitButton = form.querySelector('button[type="submit"]');
+const writeLinks = document.querySelectorAll('a[href="/write"]');
 
-function showMessage(text, isError = false) {
-    message.hidden = false;
-    message.textContent = text;
-    message.classList.toggle('error', isError);
-}
+async function alertRequestError(response) {
+    if (response.status === 403) {
+        const errorResponse = await response.json().catch(() => null);
 
-function setFormDisabled(disabled) {
-    form.querySelectorAll('input, textarea, button').forEach((element) => {
-        element.disabled = disabled;
-    });
-}
+        if (errorResponse?.error === 'PASSWORD_MISMATCH') {
+            window.alert('비밀번호가 옳지 않습니다.');
+            return;
+        }
 
-async function loadWritingStatus() {
-    const response = await fetch('/api/writing-status');
-    const status = await response.json();
+        if (errorResponse?.error === 'WRITING_CLOSED') {
+            window.alert('게시글과 댓글 작성, 수정, 삭제는 KST 기준 21:00부터 익일 06:00 직전까지만 가능합니다.');
+            return;
+        }
 
-    if (status.isWritingOpen) {
-        writingStatus.textContent = '지금은 글을 수정할 수 있습니다.';
-        setFormDisabled(false);
+        window.alert('요청이 거부되었습니다.');
         return;
     }
 
-    writingStatus.textContent = '지금은 조회만 가능합니다. 수정 시간은 KST 21:00부터 06:00 직전까지입니다.';
-    setFormDisabled(true);
+    window.alert('서버 오류가 발생했습니다.');
+}
+
+async function request(url, options) {
+    try {
+        const response = await fetch(url, options);
+
+        if (!response.ok) {
+            await alertRequestError(response);
+            return null;
+        }
+
+        return response;
+    } catch (error) {
+        window.alert('서버 오류가 발생했습니다.');
+        return null;
+    }
+}
+
+function setWriteLinksDisabled(disabled) {
+    writeLinks.forEach((link) => {
+        link.classList.toggle('disabled', disabled);
+        link.setAttribute('aria-disabled', String(disabled));
+
+        if (disabled) {
+            link.removeAttribute('href');
+            return;
+        }
+
+        link.href = '/write';
+    });
 }
 
 async function loadPost() {
-    const response = await fetch(`/api/posts/${postId}`);
-
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message);
+    const response = await request(`/api/posts/${postId}`);
+    if (response === null) {
+        return;
     }
 
     const post = await response.json();
@@ -45,10 +68,34 @@ async function loadPost() {
     contentInput.value = post.content;
 }
 
+async function loadWritingStatus() {
+    const response = await request('/api/writing-status');
+    if (response === null) {
+        setWriteLinksDisabled(true);
+        submitButton.classList.add('disabled');
+        submitButton.disabled = true;
+        return false;
+    }
+
+    const status = await response.json();
+
+    if (status.isWritingOpen) {
+        setWriteLinksDisabled(false);
+        submitButton.classList.remove('disabled');
+        submitButton.disabled = false;
+        return true;
+    }
+
+    setWriteLinksDisabled(true);
+    submitButton.classList.add('disabled');
+    submitButton.disabled = true;
+    return false;
+}
+
 async function submitEdit(event) {
     event.preventDefault();
 
-    const response = await fetch(`/api/posts/${postId}`, {
+    const response = await request(`/api/posts/${postId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
@@ -59,18 +106,20 @@ async function submitEdit(event) {
             password: passwordInput.value
         })
     });
-
-    if (!response.ok) {
-        const error = await response.json();
-        showMessage(error.message, true);
+    if (response === null) {
         return;
     }
 
     window.location.href = `/posts/${postId}`;
 }
 
-form.addEventListener('submit', submitEdit);
+async function init() {
+    await loadPost();
+    const isWritingOpen = await loadWritingStatus();
 
-Promise.all([loadWritingStatus(), loadPost()]).catch((error) => {
-    showMessage(error.message, true);
-});
+    if (isWritingOpen) {
+        form.addEventListener('submit', submitEdit);
+    }
+}
+
+init();

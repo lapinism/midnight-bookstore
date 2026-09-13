@@ -5,28 +5,24 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>심야책방</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@200..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
     <script defer src="/js/index.js"></script>
 </head>
 
 <body>
-    <main class="page">
-        <header class="topbar">
-            <a class="brand" href="/">심야책방</a>
-            <a class="button" href="/write">글쓰기</a>
-        </header>
+    <header>
+        <a href="/">
+            <h1>심야책방</h1>
+            <p>영업시간 21:00 ~ 06:00</p>
+        </a>
+        <a class="button" href="/write">글쓰기</a>
+    </header>
 
-        <section class="panel">
-            <div class="section-heading">
-                <div>
-                    <h1>오늘의 서가</h1>
-                    <p id="writing-status" class="muted">운영 시간을 확인하고 있습니다.</p>
-                </div>
-            </div>
-
-            <p id="message" class="message" hidden></p>
-            <ol id="post-list" class="post-list"></ol>
-        </section>
+    <main>
+        <ul></ul>
     </main>
 </body>
 

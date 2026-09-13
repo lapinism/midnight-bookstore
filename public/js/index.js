@@ -1,18 +1,85 @@
-const postList = document.querySelector('#post-list');
-const message = document.querySelector('#message');
-const writingStatus = document.querySelector('#writing-status');
+const postList = document.querySelector('ul');
+const writeLinks = document.querySelectorAll('a[href="/write"]');
 
-function showMessage(text, isError = false) {
-    message.hidden = false;
-    message.textContent = text;
-    message.classList.toggle('error', isError);
+async function alertRequestError(response) {
+    if (response.status === 403) {
+        const errorResponse = await response.json().catch(() => null);
+
+        if (errorResponse?.error === 'PASSWORD_MISMATCH') {
+            window.alert('비밀번호가 옳지 않습니다.');
+            return;
+        }
+
+        if (errorResponse?.error === 'WRITING_CLOSED') {
+            window.alert('게시글과 댓글 작성, 수정, 삭제는 KST 기준 21:00부터 익일 06:00 직전까지만 가능합니다.');
+            return;
+        }
+
+        window.alert('요청이 거부되었습니다.');
+        return;
+    }
+
+    window.alert('서버 오류가 발생했습니다.');
+}
+
+async function request(url, options) {
+    try {
+        const response = await fetch(url, options);
+
+        if (!response.ok) {
+            await alertRequestError(response);
+            return null;
+        }
+
+        return response;
+    } catch (error) {
+        window.alert('서버 오류가 발생했습니다.');
+        return null;
+    }
+}
+
+function setWriteLinksDisabled(disabled) {
+    writeLinks.forEach((link) => {
+        link.classList.toggle('disabled', disabled);
+        link.setAttribute('aria-disabled', String(disabled));
+
+        if (disabled) {
+            link.removeAttribute('href');
+            return;
+        }
+
+        link.href = '/write';
+    });
+}
+
+async function loadWritingStatus() {
+    const response = await request('/api/writing-status');
+    if (response === null) {
+        setWriteLinksDisabled(true);
+        return;
+    }
+
+    const status = await response.json();
+    setWriteLinksDisabled(!status.isWritingOpen);
 }
 
 function formatDate(value) {
-    return new Intl.DateTimeFormat('ko-KR', {
-        dateStyle: 'medium',
-        timeStyle: 'short'
-    }).format(new Date(value));
+    const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Seoul',
+        year: '2-digit',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    });
+
+    const parts = Object.fromEntries(
+        formatter.formatToParts(new Date(value))
+        .map(({ type, value }) => [type, value])
+    );
+
+    return `${parts.year}.${parts.month}.${parts.day} ${parts.hour}:${parts.minute}`;
 }
 
 function appendPost(post) {
@@ -21,48 +88,38 @@ function appendPost(post) {
 
     const link = document.createElement('a');
     link.href = `/posts/${post.id}`;
-    link.textContent = post.title;
 
-    const meta = document.createElement('p');
-    meta.className = 'meta';
-    meta.textContent = `${post.authorName} · ${formatDate(post.createdAt)}`;
+    const titleBlock = document.createElement('p');
 
-    item.append(link, meta);
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'strong';
+    titleSpan.textContent = post.title;
+    titleBlock.append(titleSpan);
+
+    const informationSpan = document.createElement('span');
+    informationSpan.className = 'quiet';
+    informationSpan.textContent = `${post.authorName} | ${formatDate(post.createdAt)}`;
+    titleBlock.append(informationSpan);
+
+    link.append(titleBlock);
+    item.append(link);
+
+    // item.append(link, meta);
     postList.append(item);
 }
 
-async function loadWritingStatus() {
-    const response = await fetch('/api/writing-status');
-    const status = await response.json();
-    writingStatus.textContent = status.isWritingOpen
-        ? '지금은 작성, 수정, 삭제가 가능합니다.'
-        : '지금은 조회만 가능합니다. 작성 시간은 KST 21:00부터 06:00 직전까지입니다.';
-}
+document.addEventListener('DOMContentLoaded', async (e) => {
+    await loadWritingStatus();
 
-async function loadPosts() {
-    const response = await fetch('/api/posts');
-
-    if (!response.ok) {
-        throw new Error('게시글을 불러오지 못했습니다.');
+    const response = await request('/api/posts');
+    if (response === null) {
+        return;
     }
 
     const posts = await response.json();
     postList.replaceChildren();
 
-    if (posts.length === 0) {
-        showMessage('아직 게시글이 없습니다.');
-        return;
+    if (posts.length !== 0) {
+        posts.forEach(appendPost);
     }
-
-    posts.forEach(appendPost);
-}
-
-async function main() {
-    try {
-        await Promise.all([loadWritingStatus(), loadPosts()]);
-    } catch (error) {
-        showMessage(error.message, true);
-    }
-}
-
-main();
+});
