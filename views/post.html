@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>심야책방 - 게시글</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script defer src="/js/post.js"></script>
+</head>
+
+<body>
+    <main class="page">
+        <header class="topbar">
+            <a class="brand" href="/">심야책방</a>
+            <a class="button" href="/write">글쓰기</a>
+        </header>
+
+        <article class="panel">
+            <div class="post-header">
+                <div>
+                    <h1 id="post-title">불러오는 중...</h1>
+                    <p id="post-meta" class="muted"></p>
+                </div>
+                <a id="edit-link" class="button secondary" href="#">수정</a>
+            </div>
+            <p id="post-content" class="post-content"></p>
+
+            <form id="delete-post-form" class="inline-form">
+                <input id="delete-post-password" type="password" placeholder="비밀번호" minlength="4" maxlength="100"
+                    required>
+                <button type="submit" class="danger">게시글 삭제</button>
+            </form>
+        </article>
+
+        <section class="panel">
+            <h2>댓글</h2>
+            <p id="writing-status" class="muted">운영 시간을 확인하고 있습니다.</p>
+            <p id="message" class="message" hidden></p>
+            <ol id="comment-list" class="comment-list"></ol>
+
+            <form id="comment-form" class="stack-form">
+                <label>
+                    댓글
+                    <textarea id="comment-content" maxlength="1000" required></textarea>
+                </label>
+                <label>
+                    비밀번호
+                    <input id="comment-password" type="password" minlength="4" maxlength="100" required>
+                </label>
+                <button type="submit">댓글 작성</button>
+            </form>
+        </section>
+    </main>
+</body>
+
+</html>

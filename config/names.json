@@ -1,0 +1,26 @@
+{
+    "prefixes": [
+        "Silent",
+        "Blue",
+        "Drowsy",
+        "Soft",
+        "Slow",
+        "Deep",
+        "Faint",
+        "Calm",
+        "Moonlit",
+        "Hidden"
+    ],
+    "names": [
+        "Bookmark",
+        "Sentence",
+        "Reader",
+        "Shelf",
+        "Ink",
+        "Page",
+        "Copyist",
+        "Lamp",
+        "Margin",
+        "Letter"
+    ]
+}

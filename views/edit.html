@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>심야책방 - 글 수정</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script defer src="/js/edit.js"></script>
+</head>
+
+<body>
+    <main class="page narrow">
+        <header class="topbar">
+            <a class="brand" href="/">심야책방</a>
+        </header>
+
+        <section class="panel">
+            <h1>글 수정</h1>
+            <p id="writing-status" class="muted">운영 시간을 확인하고 있습니다.</p>
+            <p id="message" class="message" hidden></p>
+
+            <form id="edit-form" class="stack-form">
+                <label>
+                    제목
+                    <input id="title" type="text" maxlength="100" required>
+                </label>
+                <label>
+                    본문
+                    <textarea id="content" maxlength="5000" required></textarea>
+                </label>
+                <label>
+                    비밀번호
+                    <input id="password" type="password" minlength="4" maxlength="100" required>
+                </label>
+                <button type="submit">수정 저장</button>
+            </form>
+        </section>
+    </main>
+</body>
+
+</html>
