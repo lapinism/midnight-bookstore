@@ -27,8 +27,18 @@ header {
     justify-content: space-between;
     align-items: flex-end;
 }
-header * {
-    display: inline-block;
+header > a:first-child {
+    display: inline-flex;
+    flex: 0 1 auto;
+    flex-direction: row;
+    align-items: flex-end;
+    min-width: 0;
+    width: fit-content;
+    flex-wrap: wrap;
+}
+header > a:first-child > * {
+    margin-right: 1rem;
+    max-width: 100%;
 }
 h1 {
     font-size: 3rem;
@@ -37,6 +47,18 @@ h1 {
 
 main {
     margin: 30px 50px;
+}
+@media (max-width: 767px) {
+    main {
+        margin: 1rem;
+    }
+    main h1 {
+        font-size: 2rem;
+    }
+    li, li > a {
+        display: flex;
+        flex-direction: column;
+    }
 }
 
 a {
@@ -72,6 +94,7 @@ ul li + li {
     background-color: var(--white);
     color: var(--primary);
     cursor: pointer;
+    white-space: nowrap;
 }
 .danger {
     appearance: none;
@@ -84,6 +107,7 @@ ul li + li {
     background-color: var(--primary);
     color: var(--white);
     cursor: pointer;
+    white-space: nowrap;
 }
 .disabled {
     appearance: none;
@@ -92,9 +116,11 @@ ul li + li {
     padding: 2px 10px;
     margin: 0 2px;
     border-radius: 5px;
+    border: none;
     background-color: var(--second);
     color: var(--primary);
     cursor: not-allowed;
+    white-space: nowrap;
 }
 
 .strong {
@@ -116,7 +142,7 @@ input {
 textarea {
     border: none;
     border-left: 5px solid var(--white);
-    height: max(100px, 30vh);
+    height: max(100px, 40vh);
     padding-left: 1rem;
     background: none;
     resize: vertical;
@@ -149,7 +175,7 @@ textarea::-webkit-scrollbar {
     min-width: 0;
 }
 .comment-form .comment-password {
-    flex: 0 0 100px;
+    flex: 0 0 auto;
 }
 .comment-form button {
     flex: 0 0 auto;

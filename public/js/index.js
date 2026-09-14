@@ -89,22 +89,17 @@ function appendPost(post) {
     const link = document.createElement('a');
     link.href = `/posts/${post.id}`;
 
-    const titleBlock = document.createElement('p');
-
     const titleSpan = document.createElement('span');
     titleSpan.className = 'strong';
     titleSpan.textContent = post.title;
-    titleBlock.append(titleSpan);
 
     const informationSpan = document.createElement('span');
     informationSpan.className = 'quiet';
     informationSpan.textContent = `${post.authorName} | ${formatDate(post.createdAt)}`;
-    titleBlock.append(informationSpan);
 
-    link.append(titleBlock);
+    link.append(titleSpan, informationSpan);
     item.append(link);
 
-    // item.append(link, meta);
     postList.append(item);
 }
 
