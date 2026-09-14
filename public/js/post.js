@@ -11,6 +11,8 @@ const commentPassword = document.querySelector('#comment-password');
 const commentSubmitButton = commentForm.querySelector('button[type="submit"]');
 const writeLinks = document.querySelectorAll('a[href="/write"]');
 
+const EDIT_WINDOW_MS = 10 * 60 * 1000;
+
 let isWritingOpen = false;
 
 async function alertRequestError(response) {
@@ -24,6 +26,11 @@ async function alertRequestError(response) {
 
         if (errorResponse?.error === 'WRITING_CLOSED') {
             window.alert('게시글과 댓글 작성, 수정, 삭제는 KST 기준 21:00부터 익일 06:00 직전까지만 가능합니다.');
+            return;
+        }
+
+        if (errorResponse?.error === 'EDIT_WINDOW_EXPIRED') {
+            window.alert('게시글과 댓글 수정은 작성 후 10분 이내에만 가능합니다.');
             return;
         }
 
@@ -69,6 +76,29 @@ function formatDate(value) {
     return `${parts.year}.${parts.month}.${parts.day} ${parts.hour}:${parts.minute}`;
 }
 
+function isEditWindowOpen(createdAt) {
+    const createdTime = Date.parse(createdAt);
+
+    if (Number.isNaN(createdTime)) {
+        return false;
+    }
+
+    const elapsed = Date.now() - createdTime;
+    return elapsed >= 0 && elapsed < EDIT_WINDOW_MS;
+}
+
+function setEditLinkDisabled(disabled, post) {
+    editLink.className = disabled ? 'disabled' : 'button';
+    editLink.setAttribute('aria-disabled', String(disabled));
+
+    if (disabled) {
+        editLink.removeAttribute('href');
+        return;
+    }
+
+    editLink.href = `/edit/${post.id}`;
+}
+
 async function loadWritingStatus() {
     const response = await request('/api/writing-status');
     if (response === null) {
@@ -85,7 +115,7 @@ async function loadWritingStatus() {
 
 function setActionControlsDisabled(disabled) {
     writeLinks.forEach((link) => {
-        link.classList.toggle('disabled', disabled);
+        link.className = disabled ? 'disabled' : 'button';
         link.setAttribute('aria-disabled', String(disabled));
 
         if (disabled) {
@@ -96,21 +126,16 @@ function setActionControlsDisabled(disabled) {
         link.href = '/write';
     });
 
-    commentSubmitButton.classList.toggle('disabled', disabled);
+    commentSubmitButton.className = disabled ? 'disabled' : 'button';
     commentSubmitButton.disabled = disabled;
 
-    deletePostLink.classList.toggle('disabled', disabled);
+    deletePostLink.className = disabled ? 'disabled' : 'danger';
     deletePostLink.setAttribute('aria-disabled', String(disabled));
 
     if (disabled) {
-        editLink.classList.add('disabled');
-        editLink.setAttribute('aria-disabled', 'true');
-        editLink.removeAttribute('href');
+        setEditLinkDisabled(true);
         return;
     }
-
-    editLink.classList.remove('disabled');
-    editLink.setAttribute('aria-disabled', 'false');
 }
 
 function createCommentItem(comment) {
@@ -137,14 +162,19 @@ function createCommentItem(comment) {
     deleteButton.className = 'danger';
     deleteButton.textContent = '삭제';
 
-    if (isWritingOpen) {
+    if (isWritingOpen && isEditWindowOpen(comment.createdAt)) {
         editButton.addEventListener('click', () => showCommentEditForm(item, comment));
         deleteButton.addEventListener('click', () => deleteComment(comment.id));
     } else {
-        editButton.classList.add('disabled');
+        editButton.className = 'disabled';
         editButton.setAttribute('aria-disabled', 'true');
-        deleteButton.classList.add('disabled');
-        deleteButton.setAttribute('aria-disabled', 'true');
+
+        if (isWritingOpen) {
+            deleteButton.addEventListener('click', () => deleteComment(comment.id));
+        } else {
+            deleteButton.className = 'disabled';
+            deleteButton.setAttribute('aria-disabled', 'true');
+        }
     }
 
     actions.append(editButton, deleteButton);
@@ -218,25 +248,23 @@ async function loadPost() {
     title.textContent = post.title;
     meta.textContent = `${post.authorName} · ${formatDate(post.createdAt)}`;
     content.textContent = post.content;
-    if (isWritingOpen) {
-        editLink.href = `/edit/${post.id}`;
-    } else {
-        editLink.removeAttribute('href');
-    }
+    setEditLinkDisabled(!isWritingOpen || !isEditWindowOpen(post.createdAt), post);
 
     commentList.replaceChildren();
 
-    if (post.comments.length === 0) {
-        return;
+    if (post.comments.length !== 0) {
+        post.comments.forEach((comment) => {
+            commentList.append(createCommentItem(comment));
+        });
     }
-
-    post.comments.forEach((comment) => {
-        commentList.append(createCommentItem(comment));
-    });
 }
 
 async function createComment(event) {
     event.preventDefault();
+
+    if (!isWritingOpen) {
+        return;
+    }
 
     const response = await request('/api/comments', {
         method: 'POST',
@@ -260,6 +288,10 @@ async function createComment(event) {
 async function deletePost(event) {
     event.preventDefault();
 
+    if (!isWritingOpen) {
+        return;
+    }
+
     const password = window.prompt('게시글 비밀번호를 입력하세요.');
 
     if (password === null) {
@@ -281,6 +313,10 @@ async function deletePost(event) {
 }
 
 async function deleteComment(commentId) {
+    if (!isWritingOpen) {
+        return;
+    }
+
     const password = window.prompt('댓글 비밀번호를 입력하세요.');
 
     if (password === null) {
@@ -302,13 +338,10 @@ async function deleteComment(commentId) {
 }
 
 async function init() {
-    const canWrite = await loadWritingStatus();
+    commentForm.addEventListener('submit', createComment);
+    deletePostLink.addEventListener('click', deletePost);
 
-    if (canWrite) {
-        commentForm.addEventListener('submit', createComment);
-        deletePostLink.addEventListener('click', deletePost);
-    }
-
+    await loadWritingStatus();
     await loadPost();
 }
 

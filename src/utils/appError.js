@@ -25,3 +25,11 @@ export function writingClosedError() {
         'Write operations are allowed only from 21:00:00 to before 06:00:00 KST.'
     );
 }
+
+export function editWindowExpiredError() {
+    return new AppError(
+        403,
+        'EDIT_WINDOW_EXPIRED',
+        'Edit operations are allowed only within 10 minute after writing.'
+    );
+}

@@ -44,6 +44,18 @@ export function isWritingOpen(date = new Date()) {
     return hour >= 21 || hour < 6;
 }
 
+export function isEditWindowOpen(createdAt, date = new Date()) {
+    const EDIT_WINDOW_MS = 10 * 60 * 1000;
+    const createdTime = Date.parse(createdAt);
+
+    if (Number.isNaN(createdTime)) {
+        return false;
+    }
+
+    const elapsed = date.getTime() - createdTime;
+    return elapsed >= 0 && elapsed < EDIT_WINDOW_MS;
+}
+
 export function getOpenPeriod(date = new Date()) {
     const { year, month, day, hour } = getKstParts(date);
 

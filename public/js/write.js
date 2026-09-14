@@ -44,7 +44,7 @@ async function request(url, options) {
 
 function setWriteLinksDisabled(disabled) {
     writeLinks.forEach((link) => {
-        link.classList.toggle('disabled', disabled);
+        link.className = disabled ? 'disabled' : 'button';
         link.setAttribute('aria-disabled', String(disabled));
 
         if (disabled) {
@@ -60,7 +60,7 @@ async function loadWritingStatus() {
     const response = await request('/api/writing-status');
     if (response === null) {
         setWriteLinksDisabled(true);
-        submitButton.classList.add('disabled');
+        submitButton.className = 'disabled';
         submitButton.disabled = true;
         return false;
     }
@@ -69,13 +69,13 @@ async function loadWritingStatus() {
 
     if (status.isWritingOpen) {
         setWriteLinksDisabled(false);
-        submitButton.classList.remove('disabled');
+        submitButton.className = 'button';
         submitButton.disabled = false;
         return true;
     }
 
     setWriteLinksDisabled(true);
-    submitButton.classList.add('disabled');
+    submitButton.className = 'disabled';
     submitButton.disabled = true;
     return false;
 }

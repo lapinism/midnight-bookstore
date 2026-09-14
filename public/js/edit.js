@@ -6,6 +6,11 @@ const passwordInput = document.querySelector('#password');
 const submitButton = form.querySelector('button[type="submit"]');
 const writeLinks = document.querySelectorAll('a[href="/write"]');
 
+const EDIT_WINDOW_MS = 10 * 60 * 1000;
+
+let currentPost = null;
+let isWritingOpen = false;
+
 async function alertRequestError(response) {
     if (response.status === 403) {
         const errorResponse = await response.json().catch(() => null);
@@ -17,6 +22,12 @@ async function alertRequestError(response) {
 
         if (errorResponse?.error === 'WRITING_CLOSED') {
             window.alert('게시글과 댓글 작성, 수정, 삭제는 KST 기준 21:00부터 익일 06:00 직전까지만 가능합니다.');
+            return;
+        }
+
+        if (errorResponse?.error === 'EDIT_WINDOW_EXPIRED') {
+            window.alert('게시글과 댓글 수정은 작성 후 10분 이내에만 가능합니다.');
+            setEditFormDisabled(true);
             return;
         }
 
@@ -45,7 +56,7 @@ async function request(url, options) {
 
 function setWriteLinksDisabled(disabled) {
     writeLinks.forEach((link) => {
-        link.classList.toggle('disabled', disabled);
+        link.className = disabled ? 'disabled' : 'button';
         link.setAttribute('aria-disabled', String(disabled));
 
         if (disabled) {
@@ -57,6 +68,27 @@ function setWriteLinksDisabled(disabled) {
     });
 }
 
+function isEditWindowOpen(createdAt) {
+    const createdTime = Date.parse(createdAt);
+
+    if (Number.isNaN(createdTime)) {
+        return false;
+    }
+
+    const elapsed = Date.now() - createdTime;
+    return elapsed >= 0 && elapsed < EDIT_WINDOW_MS;
+}
+
+function setEditFormDisabled(disabled) {
+    submitButton.className = disabled ? 'disabled' : 'button';
+    submitButton.disabled = disabled;
+}
+
+function updateEditFormState() {
+    const canEdit = isWritingOpen && currentPost !== null && isEditWindowOpen(currentPost.createdAt);
+    setEditFormDisabled(!canEdit);
+}
+
 async function loadPost() {
     const response = await request(`/api/posts/${postId}`);
     if (response === null) {
@@ -64,36 +96,42 @@ async function loadPost() {
     }
 
     const post = await response.json();
+    currentPost = post;
     titleInput.value = post.title;
     contentInput.value = post.content;
+    updateEditFormState();
 }
 
 async function loadWritingStatus() {
     const response = await request('/api/writing-status');
     if (response === null) {
         setWriteLinksDisabled(true);
-        submitButton.classList.add('disabled');
-        submitButton.disabled = true;
+        isWritingOpen = false;
+        updateEditFormState();
         return false;
     }
 
     const status = await response.json();
+    isWritingOpen = status.isWritingOpen;
 
-    if (status.isWritingOpen) {
+    if (isWritingOpen) {
         setWriteLinksDisabled(false);
-        submitButton.classList.remove('disabled');
-        submitButton.disabled = false;
+        updateEditFormState();
         return true;
     }
 
     setWriteLinksDisabled(true);
-    submitButton.classList.add('disabled');
-    submitButton.disabled = true;
+    updateEditFormState();
     return false;
 }
 
 async function submitEdit(event) {
     event.preventDefault();
+
+    if (!isWritingOpen || currentPost === null || !isEditWindowOpen(currentPost.createdAt)) {
+        updateEditFormState();
+        return;
+    }
 
     const response = await request(`/api/posts/${postId}`, {
         method: 'PUT',
@@ -115,11 +153,8 @@ async function submitEdit(event) {
 
 async function init() {
     await loadPost();
-    const isWritingOpen = await loadWritingStatus();
-
-    if (isWritingOpen) {
-        form.addEventListener('submit', submitEdit);
-    }
+    await loadWritingStatus();
+    form.addEventListener('submit', submitEdit);
 }
 
 init();

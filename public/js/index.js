@@ -40,7 +40,7 @@ async function request(url, options) {
 
 function setWriteLinksDisabled(disabled) {
     writeLinks.forEach((link) => {
-        link.classList.toggle('disabled', disabled);
+        link.className = disabled ? 'disabled' : 'button';
         link.setAttribute('aria-disabled', String(disabled));
 
         if (disabled) {
