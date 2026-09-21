@@ -1,20 +1,9 @@
 import {
     addPost,
     editPost,
-    getPostDetail,
-    getPosts,
     removePost
 } from './post.service.js';
 import { positiveInteger } from '../utils/validation.js';
-
-export function listPostsController(req, res) {
-    res.json(getPosts(req.query));
-}
-
-export function getPostController(req, res) {
-    const id = positiveInteger(req.params.id, 'post id');
-    res.json(getPostDetail(id));
-}
 
 export async function createPostController(req, res) {
     const post = await addPost({

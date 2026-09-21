@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ko">
+
+<%- include('partials/head', { title: '심야책방', scripts: [] }) %>
+
+<body>
+    <%- include('partials/header') %>
+
+    <main>
+        <ul>
+            <% posts.forEach((post) => { %>
+                <li class="post-item">
+                    <a href="/posts/<%= post.id %>">
+                        <span class="strong"><%= post.title %></span>
+                        <span class="quiet"><%= post.authorName %> | <%= post.displayCreatedAt %></span>
+                    </a>
+                </li>
+            <% }); %>
+        </ul>
+    </main>
+
+    <%- include('partials/footer') %>
+</body>
+
+</html>

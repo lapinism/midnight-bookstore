@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+
+<%- include('partials/head', {
+    title: `심야책방 - ${post.title}`,
+    scripts: ['/js/post.js']
+}) %>
+
+<body>
+    <%- include('partials/header') %>
+
+    <main data-post-id="<%= post.id %>">
+        <article class="panel">
+            <div class="post-header" style="margin-bottom: 1rem;">
+                <div>
+                    <h1 id="post-title"><%= post.title %></h1>
+                    <p>
+                        <span id="post-meta" class="quiet"><%= post.authorName %> · <%= post.displayCreatedAt %></span>
+                        <% if (post.canEdit) { %>
+                            <a id="edit-link" class="button" href="/edit/<%= post.id %>">수정</a>
+                        <% } else { %>
+                            <a id="edit-link" class="disabled" aria-disabled="true">수정</a>
+                        <% } %>
+                        <% if (isWritingOpen) { %>
+                            <a id="delete-post-link" class="danger" href="#">삭제</a>
+                        <% } else { %>
+                            <a id="delete-post-link" class="disabled" aria-disabled="true">삭제</a>
+                        <% } %>
+                    </p>
+                </div>
+            </div>
+            <p id="post-content" class="post-content"><%= post.content %></p>
+        </article>
+
+        <ul id="comment-list" style="border-bottom: 1px solid var(--second); border-top: 1px solid var(--second);">
+            <% post.comments.forEach((comment) => { %>
+                <li data-comment-id="<%= comment.id %>">
+                    <div class="comment-view">
+                        <span class="comment-text"><%= comment.content %></span>
+                        <span class="quiet"><%= comment.authorName %> | <%= comment.displayCreatedAt %></span>
+                        <div class="comment-actions" style="text-align: right;">
+                            <% if (comment.canEdit) { %>
+                                <a class="button" href="#" data-action="edit">수정</a>
+                            <% } else { %>
+                                <a class="disabled" aria-disabled="true">수정</a>
+                            <% } %>
+                            <% if (isWritingOpen) { %>
+                                <a class="danger" href="#" data-action="delete">삭제</a>
+                            <% } else { %>
+                                <a class="disabled" aria-disabled="true">삭제</a>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <% if (comment.canEdit) { %>
+                        <form class="comment-form comment-edit-form" hidden>
+                            <input class="comment-content" type="text" maxlength="1000" placeholder="댓글" value="<%= comment.content %>" required>
+                            <input class="comment-password" type="password" minlength="4" maxlength="100" placeholder="비밀번호" required>
+                            <button type="submit" class="button">저장</button>
+                            <button type="button" class="danger" data-action="cancel">취소</button>
+                        </form>
+                    <% } %>
+                </li>
+            <% }); %>
+        </ul>
+
+        <form id="comment-form" class="comment-form">
+            <input id="comment-content" class="comment-content" type="text" maxlength="1000" placeholder="댓글" required>
+            <input id="comment-password" class="comment-password" type="password" minlength="4" maxlength="100" placeholder="비밀번호" required>
+            <button type="submit" class="<%= isWritingOpen ? 'button' : 'disabled' %>" <%= isWritingOpen ? '' : 'disabled' %>>작성</button>
+        </form>
+    </main>
+
+    <%- include('partials/footer') %>
+</body>
+
+</html>

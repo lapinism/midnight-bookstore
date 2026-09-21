@@ -1,26 +1,73 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { getPostDetail, getPosts } from '../posts/post.service.js';
+import { getWritingStatus, isEditWindowOpen } from '../policy/time.service.js';
+import { positiveInteger } from '../utils/validation.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const viewsDir = path.resolve(__dirname, '..', '..', 'views');
+function formatKstDate(value) {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Seoul',
+        year: '2-digit',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23'
+    });
+    const parts = Object.fromEntries(
+        formatter.formatToParts(new Date(value)).map(({ type, value: partValue }) => {
+            return [type, partValue];
+        })
+    );
 
-function sendView(res, fileName) {
-    res.sendFile(path.join(viewsDir, fileName));
+    return `${parts.year}.${parts.month}.${parts.day} ${parts.hour}:${parts.minute}`;
+}
+
+function postViewModel(post, now, isWritingOpen) {
+    return {
+        ...post,
+        displayCreatedAt: formatKstDate(post.createdAt),
+        canEdit: isWritingOpen && isEditWindowOpen(post.createdAt, now),
+        comments: post.comments?.map((comment) => {
+            return {
+                ...comment,
+                displayCreatedAt: formatKstDate(comment.createdAt),
+                canEdit: isWritingOpen && isEditWindowOpen(comment.createdAt, now)
+            };
+        }) ?? []
+    };
 }
 
 export function indexPage(req, res) {
-    sendView(res, 'index.html');
+    const { isWritingOpen } = getWritingStatus();
+    const posts = getPosts().map((post) => {
+        return {
+            ...post,
+            displayCreatedAt: formatKstDate(post.createdAt)
+        };
+    });
+
+    res.render('index', { posts, isWritingOpen });
 }
 
 export function postPage(req, res) {
-    sendView(res, 'post.html');
+    const id = positiveInteger(req.params.id, 'post id');
+    const now = new Date();
+    const { isWritingOpen } = getWritingStatus(now);
+    const post = postViewModel(getPostDetail(id), now, isWritingOpen);
+
+    res.render('post', { post, isWritingOpen });
 }
 
 export function writePage(req, res) {
-    sendView(res, 'write.html');
+    const { isWritingOpen } = getWritingStatus();
+
+    res.render('write', { isWritingOpen });
 }
 
 export function editPage(req, res) {
-    sendView(res, 'edit.html');
+    const id = positiveInteger(req.params.id, 'post id');
+    const now = new Date();
+    const { isWritingOpen } = getWritingStatus(now);
+    const post = postViewModel(getPostDetail(id), now, isWritingOpen);
+
+    res.render('edit', { post, isWritingOpen });
 }

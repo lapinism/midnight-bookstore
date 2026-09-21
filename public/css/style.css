@@ -15,6 +15,10 @@
     font-size: 1rem;
 }
 
+[hidden] {
+    display: none !important;
+}
+
 body {
     background-color: var(--primary);
     width: min(960px, calc(100% - 32px));

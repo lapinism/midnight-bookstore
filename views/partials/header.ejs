@@ -1,0 +1,11 @@
+<header>
+    <a href="/">
+        <h1>심야책방</h1>
+        <p>영업시간 21:00 ~ 06:00</p>
+    </a>
+    <% if (isWritingOpen) { %>
+        <a class="button" href="/write">글쓰기</a>
+    <% } else { %>
+        <a class="disabled" aria-disabled="true">글쓰기</a>
+    <% } %>
+</header>

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ko">
+
+<%- include('partials/head', { title: '심야책방 - 오류', scripts: [] }) %>
+
+<body>
+    <%- include('partials/header') %>
+
+    <main>
+        <article class="panel">
+            <h1>오류</h1>
+            <p class="quiet"><%= error %></p>
+            <p><%= message %></p>
+        </article>
+    </main>
+
+    <%- include('partials/footer') %>
+</body>
+
+</html>

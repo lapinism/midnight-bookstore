@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ko">
+
+<%- include('partials/head', {
+    title: '심야책방 - 글 수정',
+    scripts: ['/js/edit.js']
+}) %>
+
+<body>
+    <%- include('partials/header') %>
+
+    <main>
+        <h1>글 수정</h1>
+
+        <form id="edit-form" class="stack-form" data-post-id="<%= post.id %>">
+            <input id="title" class="strong" type="text" maxlength="100" placeholder="제목" value="<%= post.title %>" required>
+            <textarea id="content" maxlength="5000" placeholder="본문" required><%= post.content %></textarea>
+            <p style="display: flex; flex-wrap: wrap;">
+                <input id="password" type="password" minlength="4" maxlength="100" placeholder="비밀번호" required>
+                <button type="submit" class="<%= post.canEdit ? 'button' : 'disabled' %>" <%= post.canEdit ? '' : 'disabled' %>>수정</button>
+            </p>
+        </form>
+    </main>
+
+    <%- include('partials/footer') %>
+</body>
+
+</html>

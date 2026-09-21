@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ko">
+
+<%- include('partials/head', {
+    title: '심야책방 - 글쓰기',
+    scripts: ['/js/write.js']
+}) %>
+
+<body>
+    <%- include('partials/header') %>
+
+    <main>
+        <h1>새 글</h1>
+
+        <form class="stack-form">
+            <input id="title" class="strong" type="text" maxlength="100" placeholder="제목" required>
+            <textarea id="content" maxlength="5000" placeholder="본문" required></textarea>
+            <p style="display: flex; flex-wrap: wrap;">
+                <input id="password" type="password" minlength="4" maxlength="100" placeholder="비밀번호" required>
+                <button type="submit" class="<%= isWritingOpen ? 'button' : 'disabled' %>" <%= isWritingOpen ? '' : 'disabled' %>>작성</button>
+            </p>
+        </form>
+    </main>
+
+    <%- include('partials/footer') %>
+</body>
+
+</html>
