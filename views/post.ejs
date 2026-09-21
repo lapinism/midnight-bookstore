@@ -35,21 +35,19 @@
         <ul id="comment-list" style="border-bottom: 1px solid var(--second); border-top: 1px solid var(--second);">
             <% post.comments.forEach((comment) => { %>
                 <li data-comment-id="<%= comment.id %>">
-                    <div class="comment-view">
-                        <span class="comment-text"><%= comment.content %></span>
-                        <span class="quiet"><%= comment.authorName %> | <%= comment.displayCreatedAt %></span>
-                        <div class="comment-actions" style="text-align: right;">
-                            <% if (comment.canEdit) { %>
-                                <a class="button" href="#" data-action="edit">수정</a>
-                            <% } else { %>
-                                <a class="disabled" aria-disabled="true">수정</a>
-                            <% } %>
-                            <% if (isWritingOpen) { %>
-                                <a class="danger" href="#" data-action="delete">삭제</a>
-                            <% } else { %>
-                                <a class="disabled" aria-disabled="true">삭제</a>
-                            <% } %>
-                        </div>
+                    <span class="comment-text"><%= comment.content %></span>
+                    <span class="quiet"><%= comment.authorName %> | <%= comment.displayCreatedAt %></span>
+                    <div class="comment-actions" style="text-align: right;">
+                        <% if (comment.canEdit) { %>
+                            <a class="button" href="#" data-action="edit">수정</a>
+                        <% } else { %>
+                            <a class="disabled" aria-disabled="true">수정</a>
+                        <% } %>
+                        <% if (isWritingOpen) { %>
+                            <a class="danger" href="#" data-action="delete">삭제</a>
+                        <% } else { %>
+                            <a class="disabled" aria-disabled="true">삭제</a>
+                        <% } %>
                     </div>
 
                     <% if (comment.canEdit) { %>

@@ -62,7 +62,7 @@ function closeCommentEditForm(item) {
         return;
     }
 
-    const view = item.querySelector('.comment-view');
+    const views = item.querySelectorAll('span');
     const form = item.querySelector('.comment-edit-form');
 
     if (form === null) {
@@ -71,7 +71,9 @@ function closeCommentEditForm(item) {
 
     form.reset();
     form.hidden = true;
-    view.hidden = false;
+    for (const view of views) {
+        view.hidden = false;
+    }
 
     if (activeCommentItem === item) {
         activeCommentItem = null;
@@ -83,14 +85,16 @@ function openCommentEditForm(item) {
         closeCommentEditForm(activeCommentItem);
     }
 
-    const view = item.querySelector('.comment-view');
+    const views = item.querySelectorAll('span');
     const form = item.querySelector('.comment-edit-form');
 
     if (form === null) {
         return;
     }
 
-    view.hidden = true;
+    for (const view of views) {
+        view.hidden = true;
+    }
     form.hidden = false;
     activeCommentItem = item;
     form.querySelector('.comment-content').focus();
